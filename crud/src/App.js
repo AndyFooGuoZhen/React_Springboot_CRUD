@@ -4,8 +4,8 @@ import employeeService from "./employee.service";
 
 function App() {
   const [employees, setEmployees] = useState([]);
-
   const [name, setName] = useState("");
+  const [newDepartment, setNewDepartment] = useState("");
   const [location, setLocation] = useState("");
   const [department, setDepartment] = useState("");
 
@@ -13,7 +13,6 @@ function App() {
     employeeService
       .getAll()
       .then((response) => {
-        console.log(response.data);
         setEmployees(response.data);
       })
       .catch((error) => {
@@ -24,15 +23,64 @@ function App() {
   const sendToDataBase = () => {
     const employeeObject = { name: name, location, department };
 
-    setEmployees([...employees, employeeObject]);
     employeeService
       .create(employeeObject)
       .then((response) => {
-        console.log("employee added successfully");
+        setEmployees([...employees, response.data]);
       })
       .catch((error) => {
         console.log("error");
       });
+  };
+
+  const update = (id) => {
+    const employeeToUpdate = employees.filter((employee) => {
+      return employee.id === id;
+    });
+
+    employeeService
+      .update({
+        id: id,
+        name: employeeToUpdate[0].name,
+        department: newDepartment,
+        location: employeeToUpdate[0].location,
+      })
+      .then((response) => {
+        console.log("employee's department udpated successfully");
+      })
+      .catch((error) => {
+        console.log("error");
+      });
+
+    setEmployees(
+      employees.map((employee) => {
+        return employee.id === id
+          ? {
+              id: id,
+              name: employeeToUpdate[0].name,
+              department: newDepartment,
+              location: employeeToUpdate[0].location,
+            }
+          : employee;
+      })
+    );
+  };
+
+  const deleteEmployee = (id) => {
+    employeeService
+      .deleteById(id)
+      .then((response) => {
+        console.log("employee deleted successfully");
+      })
+      .catch((error) => {
+        console.log("error");
+      });
+
+    setEmployees(
+      employees.filter((employee) => {
+        return employee.id !== id;
+      })
+    );
   };
 
   return (
@@ -70,11 +118,11 @@ function App() {
             }}
           />
 
-          <Button onClick={() => sendToDataBase()}>Post to databse</Button>
+          <Button onClick={() => sendToDataBase()}>Post to database</Button>
         </Box>
 
-        <SimpleGrid mt={"2rem"} w={"70%"} minChildWidth="300px" spacing="40px">
-          {employees.map((employee, key) => {
+        <SimpleGrid mt={"2rem"} w={"80%"} minChildWidth="300px" spacing="40px">
+          {employees.map((employee) => {
             return (
               <Box
                 borderRadius="3rem"
@@ -83,16 +131,32 @@ function App() {
                 border="1px"
                 borderColor="gray.300"
                 display={"flex"}
-                flexDirection={"column"}
-                justifyContent={"center"}
+                flexDirection="column"
                 alignText={"center"}
-                key={key}
+                key={employee.id}
                 textAlign="center"
               >
-                <Box display={"flex"} justifyContent="space-evenly">
+                <Box justifyContent="space-evenly">
                   <Text>{employee.name}</Text>
                   <Text>{employee.location}</Text>
-                  <Text>{employee.department}</Text>
+                  <Text mb={"2rem"}>{employee.department}</Text>
+                  <Input
+                    mb={"2rem"}
+                    placeholder="Update department"
+                    onChange={(e) => setNewDepartment(e.target.value)}
+                  />
+                  <Button
+                    mb={"2rem"}
+                    onClick={() => {
+                      update(employee.id);
+                    }}
+                  >
+                    Update Department
+                  </Button>
+
+                  <Button onClick={() => deleteEmployee(employee.id)}>
+                    Delete employee
+                  </Button>
                 </Box>
               </Box>
             );
