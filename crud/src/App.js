@@ -118,7 +118,7 @@ function App() {
             }}
           />
 
-          <Button onClick={() => sendToDataBase()}>Post to database</Button>
+          <Button onClick={() => sendToDataBase()}>Send to database</Button>
         </Box>
 
         <SimpleGrid mt={"2rem"} w={"80%"} minChildWidth="300px" spacing="40px">
